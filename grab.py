@@ -38,6 +38,11 @@ def getArgParser():
             required = True,
             nargs = 1,
             help="file to save the list of transcript URLs to retrieve")
+    parser.add_argument("-f","--filter",
+            metavar = "\"lower case phrase\"",
+            nargs = 1,
+            dest="filter",
+            help="phrase to filter articles on")
     parser.add_argument("-u","--url",
             metavar = "url",
             nargs = "?",
@@ -159,7 +164,26 @@ def getTranscriptUrlList(startUrl, resultPagesFilename, fromScratch, limit = 5, 
         transcriptUrlsDict["transcripts"].extend(getTranscriptUrlsFromResultPage(page["html"]))
     return transcriptUrlsDict
 
-def getTranscriptPages(transcriptList):
+def getTranscriptPages(articleListDictionary, filter = None, limit = None):
+    LOGGER.debug("Retrieving actual pages...")
+    transcripts = {"pages" : []}
+    for page in articleListDictionary["transcripts"]:
+        if filter and not filter in page['name'].lower():
+            continue
+        if limit != None and len(transcripts["pages"]) >= limit:
+            break;
+        LOGGER.debug("NAME:%s:URL:%s" % (page['name'], page['url']))
+        # Retrieve Page
+        pageString = None
+        try:
+            pageString = getPageText(page["url"])
+        except Exception as e:
+            LOGGER.error("Received error at %s:%s" % (pageUrl, e))
+            break
+        transcripts["pages"].append({ "html" : pageString, "name" : page["name"], "url" : page["url"]})
+    LOGGER.debug("Length: %d" % len(transcripts["pages"]))
+    transcripts["count"] = len(transcripts["pages"])
+    saveDictionaryAsJSON(transcripts, "transcriptText.json")
     return
 
 def main():
@@ -167,9 +191,11 @@ def main():
     parser = getArgParser()
     args = parser.parse_args()
     if args.resultPagesFilename:
-        urls = getTranscriptUrlList(args.startUrl, args.resultPagesFilename[0], args.fromScratch, args.articleListFilename[0], args.limit, args.merge)
-        saveDictionaryAsJSON(transcriptUrlsDict, args.articleListFilename)
-    openJSONAsDictionary(args.articleListFilename[0])
+        urls = getTranscriptUrlList(args.startUrl, args.resultPagesFilename[0], args.fromScratch, args.limit, args.merge)
+        saveDictionaryAsJSON(transcriptUrlsDict, args.articleListFilename[0])
+    if args.articleListFilename:
+        articleListDict = openJSONAsDictionary(args.articleListFilename[0])
+    getTranscriptPages(articleListDict, args.filter[0], args.limit)
     return 0
 
 if __name__ == "__main__":
