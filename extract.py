@@ -26,6 +26,7 @@ from pprint import pprint
 
 # NLP
 import re
+from collections import defaultdict
 
 DESCRIPTION = """Extracts transcriptions of Donald J. Trump's speeches from the 2016 United States Presidential Election race."""
 def getArgParser():
@@ -86,6 +87,8 @@ def getEachText(transcriptDictionary, limit = None):
                 continue
             if "Comments are closed." == text:
                 continue
+            if "Leave a Comment" == text:
+                continue
             if not text:
                 continue
             paras.append(text if text[-1] == ' ' else text + ' ')
@@ -94,13 +97,29 @@ def getEachText(transcriptDictionary, limit = None):
     LOGGER.debug("Parsed %d texts" % eachText["count"])
     return eachText
 
+def mergeRelatedTexts(eachTextDictionary):
+    merged = {"texts" : defaultdict(str)}
+    for text in eachTextDictionary["texts"]:
+        name = text["name"]
+        if "part" in text["name"].lower():
+            baseName = re.sub(" – Part [\d+]","",text["name"])
+            name = baseName
+        if name not in merged["texts"]:
+            LOGGER.debug("NEW:%s" % baseName)
+        merged["texts"][name] += text["text"]
+    merged["count"] = len(list(merged["texts"].keys()))
+    LOGGER.debug("Num Speeches: %d" % merged["count"])
+    return merged
+
 def main():
     # Parse Arguments
     parser = getArgParser()
     args = parser.parse_args()
     transcriptDictionary = openJSONAsDictionary(args.articlesFilename)
     texts = getEachText(transcriptDictionary)
-    saveDictionaryAsJSON(texts, "trumpText.json")
+    saveDictionaryAsJSON(texts, "trumpTextRaw.json")
+    mergedTexts = mergeRelatedTexts(texts)
+    saveDictionaryAsJSON(mergedTexts, "trumpText.json")
     return 0
 
 if __name__ == '__main__':
