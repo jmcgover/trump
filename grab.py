@@ -79,7 +79,6 @@ def openJSONAsDictionary(filename, check = False):
     with open(filename, 'r') as file:
         return json.load(file)
 
-
 def getPageText(url):
     htmlText = None
     LOGGER.debug("Opening:'%s'" % (url))
