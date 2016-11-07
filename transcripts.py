@@ -238,6 +238,7 @@ def extract_text(pages):
         transcripts[transcript_basename(p["name"])].append(strip_html(p["html"]))
     texts = []
     for name, parts in transcripts.items():
+        LOGGER.debug("Joining %2d articles for %s" % (len(parts), name))
         texts.append({"name" : name, "text" : "\n".join(parts)})
     return texts
 
@@ -299,7 +300,7 @@ def main():
             return errno.ENOENT
         texts = extract_text(pages)
         LOGGER.info("Texts: %d" % len(texts))
-        save_as_json(texts, texts_filename)
+        save_as_json({"transcripts" : texts}, texts_filename)
     return 0
 
 if __name__ == '__main__':
