@@ -16,7 +16,7 @@ import logging
 from logging import handlers
 LOGGER = logging.getLogger(__name__)
 SH = logging.StreamHandler()
-FH = logging.handlers.RotatingFileHandler("update.log", maxBytes=5 * 1000000, backupCount = 5)
+FH = logging.handlers.RotatingFileHandler("log.log", maxBytes=5 * 1000000, backupCount = 5)
 SH.setFormatter(logging.Formatter("%(asctime)s:%(levelname)s:%(message)s"))
 FH.setFormatter(logging.Formatter("%(asctime)s:%(lineno)s:%(funcName)s:%(levelname)s:%(message)s"))
 LOGGER.setLevel(logging.DEBUG)
