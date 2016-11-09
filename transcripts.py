@@ -300,7 +300,7 @@ def main():
             return errno.ENOENT
         texts = extract_text(pages)
         LOGGER.info("Texts: %d" % len(texts))
-        save_as_json({"transcripts" : texts}, texts_filename)
+        save_as_json(texts, texts_filename)
     return 0
 
 if __name__ == '__main__':
