@@ -44,7 +44,8 @@ def get_arg_parser():
             )
 
     # Sub Parsers
-    subparsers = parser.add_subparsers(help = "Actions")
+    subparsers = parser.add_subparsers(help = "Actions", dest = "commands")
+    subparsers.required = True
     update_parser = subparsers.add_parser("update", 
             help="updates the list of URLs containing transcripts")
     retrieve_parser = subparsers.add_parser("retrieve",
